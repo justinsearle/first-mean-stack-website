@@ -1,0 +1,19 @@
+
+/* Parent of this component */
+#post-create-component {
+  margin-top:20px;
+}
+
+/* Other  */
+mat-form-field {
+  width:100%;
+}
+h2 {
+  text-align: center;
+}
+textarea {
+  width:100%;
+}
+button {
+  margin-top:15px;
+}
