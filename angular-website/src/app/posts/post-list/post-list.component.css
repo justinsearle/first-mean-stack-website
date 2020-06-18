@@ -3,6 +3,6 @@ mat-accordion {
   margin:20px 0 auto 0;
   display:block;
 }
-mat-expansion-panel {
+mat-card, mat-expansion-panel {
   margin-top:15px;
 }

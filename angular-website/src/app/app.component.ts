@@ -8,6 +8,8 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+
+  //This code is leftover from when i was testing and learing
   // storedPosts: Post[] = [];
 
   // Add post via event listener of button

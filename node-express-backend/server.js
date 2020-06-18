@@ -1,4 +1,5 @@
-// //old way
+//old way (used while learing)
+//----------------------------
 // //import http package
 // const http = require('http');
 
@@ -21,29 +22,32 @@
 
 // //listen on the server
 // server.listen(port);
+//----------------------------
 
-
-// new way
+//setup server variables
 const app = require("./backend/app");
 const debug = require("debug")("node-angular");
 const http = require("http");
 
+//this is a function to normalize a given value to be used for our server port (string or int based on port type)
 const normalizePort = val => {
-  var port = parseInt(val, 10);
+  var port = parseInt(val, 10); //attempt to get Int value in base 10
 
-  if (isNaN(port)) {
-    // named pipe
-    return val;
+  //checks for named port intstead of number
+  if (isNaN(port)) {    
+    return val; //named pipe
   }
 
-  if (port >= 0) {
-    // port number
-    return port;
+  //validates number port
+  if (port >= 0) {    
+    return port; //valid port
   }
 
+  //default - bad port value
   return false;
 };
 
+//this is a constant function that stores the error event listener
 const onError = error => {
   if (error.syscall !== "listen") {
     throw error;
@@ -63,15 +67,19 @@ const onError = error => {
   }
 };
 
+//this is a constant function that stores the connection input event listener
 const onListening = () => {
   const addr = server.address();
   const bind = typeof port === "string" ? "pipe " + port : "port " + port;
-  debug("Listening on " + bind);
+  debug("Listening on " + addr + ", " + bind);
 };
 
-const port = normalizePort(process.env.PORT || "3000");
+//set the app port
+//const port = normalizePort(process.env.PORT || "3000"); //uncomment for environment port with static default
+const port = normalizePort("3000");
 app.set("port", port);
 
+//create the server variable and start listening
 const server = http.createServer(app);
 server.on("error", onError);
 server.on("listening", onListening);

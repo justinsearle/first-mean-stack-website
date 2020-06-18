@@ -1,3 +1,5 @@
+
+//main angular import references
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
@@ -15,6 +17,7 @@ import { PostCreateComponent } from './posts/post-create/post-create.component';
 import { HeaderComponent } from './header/header.component';
 import { PostListComponent } from './posts/post-list/post-list.component';
 
+//Main angular imports and frameworks
 @NgModule({
   declarations: [
     AppComponent,

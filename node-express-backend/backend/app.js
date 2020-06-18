@@ -4,9 +4,30 @@ const express = require('express');
 //include body parser package
 const bodyParser = require('body-parser');
 
+//include mongoose
+const mongoose = require('mongoose');
+
+//captial letter lets us know we can make an object from something for this
+const Post = require('./models/post');
+
 //add a route for home
 const app = express();
 
+//connect to the database
+// mongoose.connect("mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[defaultauthdb][?options]]");
+mongoose.set('useNewUrlParser', true);
+// mongoose.set('useFindAndModify', false);
+// mongoose.set('useCreateIndex', true);
+mongoose.set('useUnifiedTopology', true);
+mongoose.connect("mongodb://localhost:27017/first-mean")
+  .then(() => {
+    console.log("Connected to database.");
+  })
+  .catch(() => {
+     console.log("Connection failed.");
+  });
+
+// This is left here from when I was learning
 // //use a new middleware on the app
 // app.use((req, res, next) => {
 //     console.log("first middleware");    
@@ -22,49 +43,86 @@ app.use(bodyParser.urlencoded({ extended: false })); //only support default url 
 //set app headers
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
+    // res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+    // res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+    res.setHeader(
+      "Access-Control-Allow-Methods", 
+      "GET, POST, PATCH, PUT, DELETE, OPTIONS"
+    );
     res.setHeader(
         "Access-Control-Allow-Headers", 
         "Origin, X-Requested-With, Content-Type, Accept"
     );
-    res.setHeader(
-        "Access-Control-Allow-Methods", 
-        "GET, POST, PATCH, DELETE, OPTIONS"
-    );
+    if (req.method === "OPTIONS") {
+      //res.status(200).end();
+    }
     next();
 });
 
 //get response of posts if entered
-app.post('/api/posts', (req, res, next) => {
-  const post = req.body;
-  console.log(post);
-  res.status(201).json({
-    message: 'Post added successfully'
+app.post('/api/posts', (req, res, next) => {  
+
+  //create our post with incoming post data
+  // const post = req.body;
+  const post = new Post({
+    title:  req.body.title,
+    content:  req.body.content,
   });
+
+  //add the post to the database and return the ID
+  post.save().then(createdPost => {
+    res.status(201).json({
+      message: 'Post added successfully',
+      postId: createdPost._id
+    });
+  }); //mongoose method add to
+
+  console.log(post);  
 });
 
-//use a new middleware on the app
-app.use('/api/posts', (req, res, next) => {
-    const posts = [
-      {
-        id: 'adf3asdf', 
-        title:'first server sie post',
-        content: 'this is coming from server.'
-      },
-      {
-        id: 'adfdasda a3asdf', 
-        title:'2 server sie post',
-        content: 'this is coming from server.'
-      },
-      {
-        id: 'aaaa', 
-        title:'3 server sie post',
-        content: 'this is coming from server.'
-      }
-    ];
+// This is left here from when I was learning
+// //use a new middleware on the app
+// app.use('/api/posts', (req, res, next) => {
+  // const posts = [
+  //   {
+  //     id: 'adf3asdf', 
+  //     title:'first server side post',
+  //     content: 'this is coming from server.'
+  //   },
+  //   {
+  //     id: 'adfdasda a3asdf', 
+  //     title:'2 server side post',
+  //     content: 'this is coming from server.'
+  //   }
+  // ];
+  // res.status(200).json({
+  //     message: 'Post fetched successfully!',
+  //     posts: posts
+  // });
+// });
+
+//use a new middleware on the app to get posts when the user loads the homepage
+app.get('/api/posts', (req, res, next) => {
+
+  //use the mongoose Post model to find all posts
+  Post.find().then(documents => {
+    console.log(documents);
     res.status(200).json({
-        message: 'Post fetched successfully!',
-        posts: posts
+      message: 'Post fetched successfully!',
+      posts: documents
     });
+  });  
+});
+
+//add a new route to delete posts
+app.delete("/api/posts/:id", (req, res) => {
+  // console.log(req.params.id);
+
+  //use the mongoose Post model to delete the post ID found in the url
+  Post.deleteOne({ _id: req.params.id }).then(result => {
+     console.log(result);
+     res.status(200).json({message: 'Post deleted!'});
+  });    
 });
 
 //export the app
