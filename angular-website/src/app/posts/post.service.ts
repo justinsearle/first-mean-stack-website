@@ -4,6 +4,9 @@ import { Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { Post } from './post.model';
+import { identifierModuleUrl } from '@angular/compiler';
+import { Title } from '@angular/platform-browser';
+import { stringify } from 'querystring';
 
 @Injectable({providedIn: 'root'}) //this will allow this module to be the only instance on the server
 export class PostsService {
@@ -40,6 +43,14 @@ export class PostsService {
     return this.postsUpdated.asObservable(); //return the Subject as an observable
   }
 
+  //get a single post (use spread operater to pull out all the properties and add them to a new object)
+  getPost(id: string) {
+    //because we want to load this value from the database so the scenario of reloading on the update form and losing data is fixed
+    //we need to return the observable and call synchronously as we cannot return in a subscription.
+    return this.http.get<{_id: string, title: string, content: string}>("http://localhost:3000/api/posts/" + id); //new
+    // return {...this.posts.find(p => p.id === id)}; //old
+  }
+
   //This function can be used to add a post to the database by posting angular data to our api
   addPost(userTitle: string, userContent: string) {
     const post: Post = {
@@ -56,6 +67,27 @@ export class PostsService {
           this.posts.push(post); //add post to our local class
           this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
         });
+  }
+
+  //This function will update a post then force an update
+  updatePost(postId: string, userTitle: string, userContent: string) {
+    const post: Post = { id: postId, title: userTitle, content: userContent }
+    this.http.put('http://localhost:3000/api/posts/' + postId, post)
+      .subscribe(response => {
+        console.log(response);
+
+        //we could update the front end here because we have the data we need
+        //howevere our posts are on another page and they fetch a new copy each time
+        //so this code is redundant but left here anyway
+        //this will literally do nothing because posts havent been loaded yet but that can be fixed
+
+        // const updatedPosts = [...this.posts];
+        // const oldPostIndex = updatedPosts.findIndex(p => p.id === post.id);
+        // updatedPosts[oldPostIndex] = post;
+        // this.posts = updatedPosts;
+        // this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
+
+      });
   }
 
   //This function will delete a post from the datbase and force an update

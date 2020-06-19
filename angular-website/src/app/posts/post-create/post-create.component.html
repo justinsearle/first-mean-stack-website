@@ -1,14 +1,14 @@
 <div id="post-create-component">
   <h2>Add A Post</h2>
   <mat-card>
-    <form (submit)="onAddPost(postForm)" #postForm="ngForm">
+    <form (submit)="onSavePost(postForm)" #postForm="ngForm">
     <mat-form-field>
       <!-- <input matInput type="text" [(ngModel)]="enteredTitle"> -->
       <input
         matInput
         type="text"
         name="title"
-        ngModel
+        [ngModel]="post?.title"
         required
         placeholder="Post Title"
         #title="ngModel">
@@ -20,6 +20,7 @@
         id="post-create-text"
         rows="4"
         name="content"
+        [ngModel]="post?.content"
         ngModel
         required
         placeholder="Post Content"

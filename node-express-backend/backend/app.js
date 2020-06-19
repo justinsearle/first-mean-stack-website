@@ -114,6 +114,36 @@ app.get('/api/posts', (req, res, next) => {
   });  
 });
 
+//use a new route to update a post
+//put will overwrite a post, patch will update parts of a post
+app.put("/api/posts/:id", (req, res, next) => {
+
+  //create a new post
+  const post = new Post({
+    _id: req.body.id,
+    title: req.body.title,
+    content: req.body.content
+  });
+
+  //use Mongoose to update a resource via Post model
+  Post.updateOne({_id: req.params.id}, post).then(result => {
+    console.log(result);
+    res.status(200).json({message: "Update succesful!"});
+  });
+
+});
+
+//use a new route to get a single post from the api
+app.get("/api/posts/:id", (req, res, next) => {
+  Post.findById(req.params.id).then(post => {
+    if (post) {
+      res.status(200).json(post);
+    } else {
+      res.status(404).json({message: 'Post not found!'});
+    }
+  })
+});
+
 //add a new route to delete posts
 app.delete("/api/posts/:id", (req, res) => {
   // console.log(req.params.id);
