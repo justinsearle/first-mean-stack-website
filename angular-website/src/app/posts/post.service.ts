@@ -7,13 +7,14 @@ import { Post } from './post.model';
 import { identifierModuleUrl } from '@angular/compiler';
 import { Title } from '@angular/platform-browser';
 import { stringify } from 'querystring';
+import { Router } from '@angular/router';
 
 @Injectable({providedIn: 'root'}) //this will allow this module to be the only instance on the server
 export class PostsService {
   private posts: Post[] = [];
   private postsUpdated = new Subject<Post[]>();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   //This function will update the posts array with new data via the api then force a frontend update
   getPosts() {
@@ -66,6 +67,7 @@ export class PostsService {
           post.id = postId; //update post ID with new added id
           this.posts.push(post); //add post to our local class
           this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
+          this.router.navigate(["/"]); this.router.navigate(["/"]); //navigate to home (posts list) after adding one
         });
   }
 
@@ -87,6 +89,7 @@ export class PostsService {
         // this.posts = updatedPosts;
         // this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
 
+        this.router.navigate(["/"]); //navigate to home (posts list) after adding one
       });
   }
 

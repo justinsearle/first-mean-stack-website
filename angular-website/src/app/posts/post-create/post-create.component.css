@@ -17,3 +17,7 @@ textarea {
 button {
   margin-top:15px;
 }
+
+mat-spinner {
+margin: auto;
+}

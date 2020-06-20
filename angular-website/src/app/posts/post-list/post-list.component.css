@@ -6,3 +6,6 @@ mat-accordion {
 mat-card, mat-expansion-panel {
   margin-top:15px;
 }
+mat-spinner {
+  margin: auto;
+}

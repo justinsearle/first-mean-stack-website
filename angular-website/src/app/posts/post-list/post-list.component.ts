@@ -19,12 +19,14 @@ export class PostListComponent implements OnInit, OnDestroy {
   // @Input() posts: Post[] = []; //another way of using a 2 way binding to get the updates posts from a sub module
 
   posts: Post[] = [];
+  isLoading = false;
   private postsSub: Subscription;
 
   constructor(public postsService: PostsService) {}
 
   //angular automatically executes for us when it creates this component
   ngOnInit() {
+    this.isLoading = true; //show spinner
 
     //get posts (empty array)
     // this.posts = this.postsService.getPosts();
@@ -34,6 +36,7 @@ export class PostListComponent implements OnInit, OnDestroy {
     //subscribe to post updates from the post service
     this.postsSub = this.postsService.getPostUpdateListener()
       .subscribe((posts: Post[]) => {
+        this.isLoading = false; //hide spinner
         this.posts = posts;
       });
   }
