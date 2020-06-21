@@ -4,9 +4,6 @@ import { Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { Post } from './post.model';
-import { identifierModuleUrl } from '@angular/compiler';
-import { Title } from '@angular/platform-browser';
-import { stringify } from 'querystring';
 import { Router } from '@angular/router';
 
 @Injectable({providedIn: 'root'}) //this will allow this module to be the only instance on the server
@@ -29,13 +26,12 @@ export class PostsService {
           };
         });
       }))
-      // .subscribe((postData) => { //old
       .subscribe((transFormedPostData) => {
+      // .subscribe((postData) => { //old
         // this.posts = postData.posts //old
         this.posts = transFormedPostData
         this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
       });
-
     // return [...this.posts]; //return a copy of our posts not the actual memory reference //old
   }
 
@@ -62,7 +58,7 @@ export class PostsService {
     this.http
       .post<{message: string, postId: string}>('http://localhost:3000/api/posts', post)
         .subscribe((res) => {
-          //console.log("RESULT: " + res.message);
+          console.log("Post Service Add Post RESULT: " + res.message);
           const postId = res.postId;
           post.id = postId; //update post ID with new added id
           this.posts.push(post); //add post to our local class
@@ -76,13 +72,12 @@ export class PostsService {
     const post: Post = { id: postId, title: userTitle, content: userContent }
     this.http.put('http://localhost:3000/api/posts/' + postId, post)
       .subscribe(response => {
-        console.log(response);
+        console.log("Post Service Update Post RESPONSE: " + response);
 
         //we could update the front end here because we have the data we need
         //howevere our posts are on another page and they fetch a new copy each time
         //so this code is redundant but left here anyway
         //this will literally do nothing because posts havent been loaded yet but that can be fixed
-
         // const updatedPosts = [...this.posts];
         // const oldPostIndex = updatedPosts.findIndex(p => p.id === post.id);
         // updatedPosts[oldPostIndex] = post;
@@ -98,7 +93,7 @@ export class PostsService {
     this.http
       .delete<{message: string}>('http://localhost:3000/api/posts/' + postId)
         .subscribe(() => {
-          //console.log('Deleted!: ' + res.message);
+          // console.log("Post Service Delete Post DELETED:" + res.message);
 
           //remove ui content by removing post and updating
           const updatedPosts = this.posts.filter(post => post.id !== postId); //remove post from array (this is most efficient)

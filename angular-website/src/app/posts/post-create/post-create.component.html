@@ -2,33 +2,41 @@
   <h2>Add A Post</h2>
   <mat-card>
     <mat-spinner *ngIf="isLoading"></mat-spinner>
-    <form (submit)="onSavePost(postForm)" #postForm="ngForm" *ngIf="!isLoading">
-    <mat-form-field>
-      <!-- <input matInput type="text" [(ngModel)]="enteredTitle"> -->
-      <input
-        matInput
-        type="text"
-        name="title"
-        [ngModel]="post?.title"
-        required
-        placeholder="Post Title"
-        #title="ngModel">
-      <mat-error *ngIf="title.invalid">Please enter a post title.</mat-error>
-    </mat-form-field>
-    <mat-form-field>
-      <textarea
-        matInput
-        id="post-create-text"
-        rows="4"
-        name="content"
-        [ngModel]="post?.content"
-        ngModel
-        required
-        placeholder="Post Content"
-        #content="ngModel"></textarea>
-      <mat-error *ngIf="content.invalid">Please enter a post title.</mat-error>
-    </mat-form-field>
-    <button mat-raised-button color="primary" type="submit">Save Post</button>
-  </form>
+    <!-- Changing from template driven form to reactive form so the form must change -->
+    <!-- <form (submit)="onSavePost(postForm)" #postForm="ngForm" *ngIf="!isLoading"> -->
+    <form [formGroup]="form" (submit)="onSavePost()" *ngIf="!isLoading">
+      <mat-form-field>
+        <!-- <input matInput type="text" [(ngModel)]="enteredTitle"> -->
+        <input
+          matInput
+          type="text"
+          formControlName="title"
+          placeholder="Post Title">
+          <!-- required -->
+          <!-- #title="ngModel" -->
+          <!-- [ngModel]="post?.title" -->
+        <mat-error *ngIf="form.get('title').invalid">Please enter a post title.</mat-error>
+      </mat-form-field>
+      <div>
+        <button mat-stroked-button type="button" (click)="filePicker.click();">Pick Image</button>
+        <input type="file" #filePicker (change)="onImagePicked($event)">
+      </div>
+      <div class="image-preview" *ngIf="imagePreview !== '' && imagePreview != null && form.get('image').valid">
+        <img [src]="imagePreview" [alt]="form.value.title">
+      </div>
+      <mat-form-field>
+        <textarea
+          matInput
+          id="post-create-text"
+          rows="4"
+          formControlName="content"
+          placeholder="Post Content"></textarea>
+          <!-- required -->
+          <!-- [ngModel]="post?.content" -->
+          <!-- #content="ngModel" -->
+        <mat-error *ngIf="form.get('content').invalid">Please enter a post title.</mat-error>
+      </mat-form-field>
+      <button mat-raised-button color="primary" type="submit">Save Post</button>
+    </form>
   </mat-card>
 </div>

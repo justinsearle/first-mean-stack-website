@@ -21,10 +21,10 @@ mongoose.set('useNewUrlParser', true);
 mongoose.set('useUnifiedTopology', true);
 mongoose.connect("mongodb://localhost:27017/first-mean")
   .then(() => {
-    console.log("Connected to database.");
+    console.log("APP: Connected to Database.");
   })
   .catch(() => {
-     console.log("Connection failed.");
+     console.log("APP: Database Connection failed.");
   });
 
 // This is left here from when I was learning

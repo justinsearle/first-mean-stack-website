@@ -18,6 +18,7 @@ router.post("", (req, res, next) => {
 
   //add the post to the database and return the ID
   post.save().then(createdPost => {
+    console.log("ROUTES.POSTS POST: added post to database successfully");
     res.status(201).json({
       message: 'Post added successfully',
       postId: createdPost._id
@@ -32,7 +33,7 @@ router.get("", (req, res, next) => {
 
   //use the mongoose Post model to find all posts
   Post.find().then(documents => {
-    console.log(documents);
+    console.log("ROUTES.POSTS GET: database results: " + documents);
     res.status(200).json({
       message: 'Post fetched successfully!',
       posts: documents
@@ -53,7 +54,7 @@ router.put("/:id", (req, res, next) => {
 
   //use Mongoose to update a resource via Post model
   Post.updateOne({_id: req.params.id}, post).then(result => {
-    console.log(result);
+    console.log("ROUTES.POSTS PUT: database record updated successfully: " + req.params.id);
     res.status(200).json({message: "Update succesful!"});
   });
 
@@ -63,8 +64,10 @@ router.put("/:id", (req, res, next) => {
 router.get("/:id", (req, res, next) => {
   Post.findById(req.params.id).then(post => {
     if (post) {
+      console.log("ROUTES.POSTS GET: database record found: " + req.params.id);
       res.status(200).json(post);
     } else {
+      console.log("ROUTES.POSTS GET: database record not found:" + req.params.id);
       res.status(404).json({message: 'Post not found!'});
     }
   })
@@ -76,7 +79,7 @@ router.delete("/:id", (req, res) => {
 
   //use the mongoose Post model to delete the post ID found in the url
   Post.deleteOne({ _id: req.params.id }).then(result => {
-     console.log(result);
+    console.log("ROUTES.POSTS DELETE: database record deleted: " + req.params.id);
      res.status(200).json({message: 'Post deleted!'});
   });    
 });
