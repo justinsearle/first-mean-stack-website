@@ -1,10 +1,16 @@
 import { AbstractControl } from '@angular/forms';
-import { Observable, Observer } from 'rxjs';
+import { Observable, Observer, of } from 'rxjs';
 
 //create our validator function for our mime type when uploading images
 export const mimeType = (
   control: AbstractControl
 ): Promise<{ [key: string]: any }> | Observable<{ [key: string]: any }> => {
+
+  //check for string value
+  if (typeof(control.value) === 'string') {
+    return of(null); //quick easy easy to return observable
+  }
+
   const file = control.value as File;
   const fileReader = new FileReader();
   const frObservable = Observable.create(

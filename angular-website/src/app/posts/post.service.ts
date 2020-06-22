@@ -22,7 +22,8 @@ export class PostsService {
           return {
             title: post.title,
             content: post.content,
-            id: post._id
+            id: post._id,
+            imagePath: post.imagePath
           };
         });
       }))
@@ -44,45 +45,76 @@ export class PostsService {
   getPost(id: string) {
     //because we want to load this value from the database so the scenario of reloading on the update form and losing data is fixed
     //we need to return the observable and call synchronously as we cannot return in a subscription.
-    return this.http.get<{_id: string, title: string, content: string}>("http://localhost:3000/api/posts/" + id); //new
+    return this.http.get<{ _id: string, title: string, content: string, imagePath: string }>("http://localhost:3000/api/posts/" + id); //new
     // return {...this.posts.find(p => p.id === id)}; //old
   }
 
   //This function can be used to add a post to the database by posting angular data to our api
-  addPost(userTitle: string, userContent: string) {
-    const post: Post = {
-      id: null,
-      title: userTitle,
-      content: userContent
-    }; //create post model
+  // 6/21/2020 adding image functionality - json data cannot include images so switching to send form data now
+  addPost(userTitle: string, userContent: string, image: File) {
+    // const post: Post = { id: null, title: userTitle, content: userContent }; //create post model
+    const postData = new FormData();
+    postData.append("title", userTitle);
+    postData.append("content", userContent);
+    postData.append("image", image, userTitle); //user title for alt text
     this.http
-      .post<{message: string, postId: string}>('http://localhost:3000/api/posts', post)
-        .subscribe((res) => {
-          console.log("Post Service Add Post RESULT: " + res.message);
-          const postId = res.postId;
-          post.id = postId; //update post ID with new added id
-          this.posts.push(post); //add post to our local class
-          this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
-          this.router.navigate(["/"]); this.router.navigate(["/"]); //navigate to home (posts list) after adding one
-        });
+      // .post<{message: string, postId: string}>(
+      .post<{message: string, post: Post}>(
+        'http://localhost:3000/api/posts',
+        postData
+      )
+      .subscribe((res) => {
+        console.log("Post Service Add Post RESULT: " + res.message);
+        const post: Post = {
+          id: res.post.id,
+          title: userTitle,
+          content: userContent,
+          imagePath: res.post.imagePath
+        }
+        // const postId = res.postId;
+        // post.id = postId; //update post ID with new added id
+        this.posts.push(post); //add post to our local class
+        this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
+        this.router.navigate(["/"]); this.router.navigate(["/"]); //navigate to home (posts list) after adding one
+      });
   }
 
   //This function will update a post then force an update
-  updatePost(postId: string, userTitle: string, userContent: string) {
-    const post: Post = { id: postId, title: userTitle, content: userContent }
-    this.http.put('http://localhost:3000/api/posts/' + postId, post)
+  updatePost(postId: string, userTitle: string, userContent: string, image: File | string) {
+    let postData: Post | FormData;
+    if (typeof(image) === 'object') {
+      postData = new FormData();
+      postData.append("id", postId); //must include ID to update
+      postData.append("title", userTitle);
+      postData.append("content", userContent);
+      postData.append("image", image, userTitle); //title for alt text
+    } else {
+      postData = {
+        id: postId,
+        title: userTitle,
+        content: userContent,
+        imagePath: image
+      }
+    }
+    this.http.put('http://localhost:3000/api/posts/' + postId, postData)
       .subscribe(response => {
         console.log("Post Service Update Post RESPONSE: " + response);
 
         //we could update the front end here because we have the data we need
         //howevere our posts are on another page and they fetch a new copy each time
         //so this code is redundant but left here anyway
-        //this will literally do nothing because posts havent been loaded yet but that can be fixed
-        // const updatedPosts = [...this.posts];
-        // const oldPostIndex = updatedPosts.findIndex(p => p.id === post.id);
-        // updatedPosts[oldPostIndex] = post;
-        // this.posts = updatedPosts;
-        // this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
+        //this will literally do nothing because posts havent been loaded at this point
+        const updatedPosts = [...this.posts];
+        const oldPostIndex = updatedPosts.findIndex(p => p.id === postId);
+        const post: Post = {
+          id: postId,
+          title: userTitle,
+          content: userContent,
+          imagePath: response.imagePath //TODO
+        }
+        updatedPosts[oldPostIndex] = post;
+        this.posts = updatedPosts;
+        this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
 
         this.router.navigate(["/"]); //navigate to home (posts list) after adding one
       });

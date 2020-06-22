@@ -1,3 +1,6 @@
+//include from node JS to map to paths (image folder)
+const path = require('path');
+
 //include express JS in our app
 const express = require('express');
 
@@ -39,6 +42,9 @@ mongoose.connect("mongodb://localhost:27017/first-mean")
 //set up middle ware for parsing incoming requests and adding to the response as a property
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false })); //only support default url encoding
+
+//allow any requests to the image folder to be granted (ExpressJS middleware)
+app.use("/images", express.static(path.join("backend/images")));
 
 //set app headers and enable CORS
 app.use((req, res, next) => {

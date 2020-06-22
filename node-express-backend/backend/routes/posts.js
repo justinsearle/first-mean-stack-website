@@ -1,4 +1,8 @@
+//require express JS
 const express = require("express");
+
+//require multer (for image upload as bodyParser will not work for files)
+const multer = require('multer');
 
 //captial letter lets us know we can make an object from this onject
 const Post = require('../models/post');
@@ -6,22 +10,52 @@ const Post = require('../models/post');
 //create our express JS router object
 const router = express.Router();
 
-//get response of posts if entered
-router.post("", (req, res, next) => {  
+const MIME_TYPE_MAP = {
+  'image/png': 'png',
+  'image/jpeg': 'jpeg',
+  'image/jpg': 'jpg'
+};
 
+//multer-config: tell multer where to store files that might be attached to incoming request
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const isValid = MIME_TYPE_MAP[file.mimetype];
+    let error = new Error("Invalid mime type");
+    if (isValid) {
+        error = null;
+    }
+    cb(error, "backend/images"); //pass back the "where to store" info to multer    
+  },
+  filename: (req, file, cb) => {
+    //replace whitepace with hyphens
+    const name = file.originalname.toLocaleLowerCase().split(' ').join('-');
+    const ext = MIME_TYPE_MAP[file.mimetype]; //get file extension
+    cb(null, name + "-" + Date.now() + "." + ext); //pass back file name
+  }
+});
+
+//create a post in the database
+router.post("", multer({storage: storage}).single("image"), (req, res, next) => {  
+  //get the url of our server
+  const url = req.protocol + '://' + req.get("host");
   //create our post with incoming post data
   // const post = req.body;
   const post = new Post({
     title:  req.body.title,
     content:  req.body.content,
+    imagePath: url + "/images/" + req.file.filename
   });
 
   //add the post to the database and return the ID
   post.save().then(createdPost => {
     console.log("ROUTES.POSTS POST: added post to database successfully");
     res.status(201).json({
-      message: 'Post added successfully',
-      postId: createdPost._id
+      message: 'Post added successfully',      
+      post: {
+        //next gen javascript features (spread operator) copies all properties             
+        ...createdPost,
+        id: createdPost._id //then we can override some   
+      }
     });
   }); //mongoose method add to
 
@@ -43,15 +77,21 @@ router.get("", (req, res, next) => {
 
 //use a new route to update a post
 //put will overwrite a post, patch will update parts of a post
-router.put("/:id", (req, res, next) => {
-
+router.put("/:id", multer({storage: storage}).single("image"), (req, res, next) => {
+  let imagePath = req.body.imagePath;
+  if (req.file) {
+    const url = req.protocol + '://' + req.get("host");
+    imagePath = url + "/images/" + req.file.filename;
+  }
   //create a new post
   const post = new Post({
     _id: req.body.id,
     title: req.body.title,
-    content: req.body.content
+    content: req.body.content,
+    imagePath: imagePath
   });
-
+  console.log("ROUTES.POSTS PUT post:" + post);
+  
   //use Mongoose to update a resource via Post model
   Post.updateOne({_id: req.params.id}, post).then(result => {
     console.log("ROUTES.POSTS PUT: database record updated successfully: " + req.params.id);
