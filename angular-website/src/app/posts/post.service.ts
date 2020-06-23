@@ -9,29 +9,37 @@ import { Router } from '@angular/router';
 @Injectable({providedIn: 'root'}) //this will allow this module to be the only instance on the server
 export class PostsService {
   private posts: Post[] = [];
-  private postsUpdated = new Subject<Post[]>();
+  // private postsUpdated = new Subject<Post[]>(); //old
+  private postsUpdated = new Subject<{ posts: Post[], postCount: number }>();
 
   constructor(private http: HttpClient, private router: Router) {}
 
   //This function will update the posts array with new data via the api then force a frontend update
-  getPosts() {
+  getPosts(postsPerPage: number, currentPage: number) {
+    const queryParams = `?pagesize=${postsPerPage}&page=${currentPage}`; //template expression with backticks: dynamically add values into a normal string
     this.http
-      .get<{message: string, posts: any}>('http://localhost:3000/api/posts')
+      .get<{ message: string, posts: any, maxPosts: number }>('http://localhost:3000/api/posts' + queryParams)
       .pipe(map((postData) => { //strip the message and update the posts elements
-        return postData.posts.map(post => {
-          return {
-            title: post.title,
-            content: post.content,
-            id: post._id,
-            imagePath: post.imagePath
-          };
-        });
+        return {
+          posts: postData.posts.map(post => {
+            return {
+              title: post.title,
+              content: post.content,
+              id: post._id,
+              imagePath: post.imagePath
+            };
+          }),
+          maxPosts: postData.maxPosts
+        }; //returns javascript object
       }))
       .subscribe((transFormedPostData) => {
       // .subscribe((postData) => { //old
         // this.posts = postData.posts //old
-        this.posts = transFormedPostData
-        this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
+        this.posts = transFormedPostData.posts;
+        this.postsUpdated.next({
+          posts: [...this.posts],
+          postCount: transFormedPostData.maxPosts
+        }); //trigger an update by pushing an updated post list
       });
     // return [...this.posts]; //return a copy of our posts not the actual memory reference //old
   }
@@ -65,16 +73,17 @@ export class PostsService {
       )
       .subscribe((res) => {
         console.log("Post Service Add Post RESULT: " + res.message);
-        const post: Post = {
-          id: res.post.id,
-          title: userTitle,
-          content: userContent,
-          imagePath: res.post.imagePath
-        }
-        // const postId = res.postId;
-        // post.id = postId; //update post ID with new added id
-        this.posts.push(post); //add post to our local class
-        this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
+        //do not need this code because we navigate which causes a reload
+        // const post: Post = {
+        //   id: res.post.id,
+        //   title: userTitle,
+        //   content: userContent,
+        //   imagePath: res.post.imagePath
+        // }
+        // // const postId = res.postId;
+        // // post.id = postId; //update post ID with new added id
+        // this.posts.push(post); //add post to our local class
+        // this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
         this.router.navigate(["/"]); this.router.navigate(["/"]); //navigate to home (posts list) after adding one
       });
   }
@@ -104,33 +113,35 @@ export class PostsService {
         //howevere our posts are on another page and they fetch a new copy each time
         //so this code is redundant but left here anyway
         //this will literally do nothing because posts havent been loaded at this point
-        const updatedPosts = [...this.posts];
-        const oldPostIndex = updatedPosts.findIndex(p => p.id === postId);
-        const post: Post = {
-          id: postId,
-          title: userTitle,
-          content: userContent,
-          imagePath: response.imagePath //TODO
-        }
-        updatedPosts[oldPostIndex] = post;
-        this.posts = updatedPosts;
-        this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
+        // const updatedPosts = [...this.posts];
+        // const oldPostIndex = updatedPosts.findIndex(p => p.id === postId);
+        // const post: Post = {
+        //   id: postId,
+        //   title: userTitle,
+        //   content: userContent,
+        //   //imagePath: response.imagePath //TODO
+        //   imagePath: ""
+        // }
+        // updatedPosts[oldPostIndex] = post;
+        // this.posts = updatedPosts;
+        // this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
 
         this.router.navigate(["/"]); //navigate to home (posts list) after adding one
       });
   }
 
   //This function will delete a post from the datbase and force an update
+  //new easy way is to return the configured http call
   deletePost(postId: string) {
-    this.http
+    return this.http
       .delete<{message: string}>('http://localhost:3000/api/posts/' + postId)
-        .subscribe(() => {
-          // console.log("Post Service Delete Post DELETED:" + res.message);
+        // .subscribe(() => {
+        //   // console.log("Post Service Delete Post DELETED:" + res.message);
 
-          //remove ui content by removing post and updating
-          const updatedPosts = this.posts.filter(post => post.id !== postId); //remove post from array (this is most efficient)
-          this.posts = updatedPosts; //update posts with new array
-          this.postsUpdated.next([...this.posts]); //force update on frontend
-        });
+        //   //remove ui content by removing post and updating
+        //   const updatedPosts = this.posts.filter(post => post.id !== postId); //remove post from array (this is most efficient)
+        //   this.posts = updatedPosts; //update posts with new array
+        //   this.postsUpdated.next([...this.posts]); //force update on frontend
+        // });
   }
 }

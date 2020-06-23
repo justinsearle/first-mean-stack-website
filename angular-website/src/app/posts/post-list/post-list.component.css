@@ -17,3 +17,6 @@ mat-spinner {
   max-width:400px;
   box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
 }
+.mat-paginator {
+  margin-top:1rem; /* default 1 rem should be about 16px */
+}

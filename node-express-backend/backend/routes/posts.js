@@ -64,13 +64,26 @@ router.post("", multer({storage: storage}).single("image"), (req, res, next) => 
 
 //use a new middleware on the app to get posts when the user loads the homepage
 router.get("", (req, res, next) => {
-
+  const pageSize = +req.query.pagesize;
+  const currentPage = +req.query.page;
+  const postQuery = Post.find(); //only executes when we call .then
+  let fetchedPosts;
+  if (pageSize && currentPage) {
+    postQuery
+      .skip(pageSize * (currentPage - 1)) //skip certain amount of posts
+      .limit(pageSize); //narrow down further
+  }
   //use the mongoose Post model to find all posts
-  Post.find().then(documents => {
+  postQuery.then(documents => {
     console.log("ROUTES.POSTS GET: database results: " + documents);
+    fetchedPosts = documents;
+    return Post.count(); //return a query that will be executed - this creates a new promise we can listen to
+  })
+  .then(count => {
     res.status(200).json({
       message: 'Post fetched successfully!',
-      posts: documents
+      posts: fetchedPosts,
+      maxPosts: count
     });
   });  
 });
