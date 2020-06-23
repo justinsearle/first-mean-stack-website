@@ -12,6 +12,7 @@ const mongoose = require('mongoose');
 
 //include posts routes file
 const postsRoutes = require('./routes/posts');
+const userRoutes = require('./routes/user');
 
 //create our router object essentially
 const app = express();
@@ -83,6 +84,9 @@ app.use((req, res, next) => {
 
 //forward any posts requests into our posts routes with express JS
 app.use("/api/posts", postsRoutes);
+
+//forward any users requests into our user routes with express JS
+app.use("/api/user", userRoutes);
 
 //export the app
 module.exports = app;
