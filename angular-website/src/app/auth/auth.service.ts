@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 export class AuthService {
   private isAuthenticated = false;
   private token: string;
+  private tokenTimer: NodeJS.Timer; //made available by typescript
   private authStatusListener = new Subject<boolean>(); //push auth info to components that are interested
 
   //inject HTTP client and angular Router
@@ -41,7 +42,7 @@ export class AuthService {
   //login user
   loginUser(email: string, password:string) {
     const authData: AuthData = { email: email, password: password };
-    this.http.post<{token: string}>("http://localhost:3000/api/user/login", authData)
+    this.http.post<{ token: string, expiresIn: number }>("http://localhost:3000/api/user/login", authData)
       .subscribe(response => {
         console.log("Auth Service Login User::");
         console.log(response);
@@ -50,6 +51,12 @@ export class AuthService {
         this.token = token;
         //check for a valid token
         if (token) {
+          //get expires in duration
+          const expiresInDuration = response.expiresIn;
+          this.tokenTimer = setTimeout(() => {
+              //force logout after duration set time
+              this.logoutUser();
+          },  (expiresInDuration * 1000)); //set timeout works in milliseconds
           this.isAuthenticated = true;
           this.authStatusListener.next(true); //emit a new value for the other components
           this.router.navigate(['/']); //navigate home
@@ -62,6 +69,7 @@ export class AuthService {
     this.token = null;
     this.isAuthenticated = false;
     this.authStatusListener.next(false); //push new value
+    clearTimeout(this.tokenTimer); //clear the timer when we logout
     this.router.navigate(['/']); //navigate home
   }
 }

@@ -71,7 +71,8 @@ router.post("/login", (req, res, next) => {
       //return our token
       res.status(200).json({
         token: token,
-        message: "Authenticated!"
+        message: "Authenticated!",
+        expiresIn: 3600 //3600 seconds = 1 hr
       });
     })
     .catch(err => {

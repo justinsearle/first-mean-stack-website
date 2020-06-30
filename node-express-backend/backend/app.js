@@ -65,7 +65,7 @@ app.use((req, res, next) => {
     }
     next();
 });
-
+ 
 // This is left here from when I was learning
 // //use a new middleware on the app
 // app.use('/api/posts', (req, res, next) => {
