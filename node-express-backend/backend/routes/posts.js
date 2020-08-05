@@ -53,8 +53,11 @@ router.post(
     const post = new Post({
       title:  req.body.title,
       content:  req.body.content,
-      imagePath: url + "/images/" + req.file.filename
+      imagePath: url + "/images/" + req.file.filename,
+      creator: req.userData.userId    
     });
+    //console.log(req.userData);
+    //return res.status(200).json({}); //return so we dont save database to test
 
     //add the post to the database and return the ID
     post.save().then(createdPost => {
@@ -122,9 +125,14 @@ router.put(
     console.log("ROUTES.POSTS PUT post:" + post);
     
     //use Mongoose to update a resource via Post model
-    Post.updateOne({_id: req.params.id}, post).then(result => {
+    Post.updateOne({_id: req.params.id, creator: req.userData.userId}, post).then(result => {
       console.log("ROUTES.POSTS PUT: database record updated successfully: " + req.params.id);
-      res.status(200).json({message: "Update succesful!"});
+      console.log(result); //log object
+      if (result.nModified > 0) {
+        res.status(200).json({message: "Update succesful!"});
+      } else {
+        res.status(401).json({message: "Not authorized!"});
+      }
     });
   }
 );
@@ -148,9 +156,13 @@ router.delete("/:id", checkAuth, (req, res) => {
   // console.log(req.params.id);
 
   //use the mongoose Post model to delete the post ID found in the url
-  Post.deleteOne({ _id: req.params.id }).then(result => {
+  Post.deleteOne({ _id: req.params.id, creator: req.userData.userId }).then(result => {
     console.log("ROUTES.POSTS DELETE: database record deleted: " + req.params.id);
-     res.status(200).json({message: 'Post deleted!'});
+    if (result.n > 0) {
+      res.status(200).json({message: "Post deleted!"});
+    } else {
+      res.status(401).json({message: "Not authorized!"});
+    }
   });    
 });
 
