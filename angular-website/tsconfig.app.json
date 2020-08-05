@@ -2,7 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": []
+    "types": [
+      // "node" //added to fix NodeJS.Timer namespace issue... Nevermind this is bad to include in angular when targetting browser
+    ]
   },
   "files": [
     "src/main.ts",

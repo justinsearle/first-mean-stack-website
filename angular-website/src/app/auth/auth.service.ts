@@ -8,7 +8,8 @@ import { Router } from '@angular/router';
 export class AuthService {
   private isAuthenticated = false;
   private token: string;
-  private tokenTimer: NodeJS.Timer; //made available by typescript
+  // private tokenTimer: NodeJS.Timer; //made available by typescript.. this one has intermittent namespace issues
+  private tokenTimer: number | undefined; //made available by typescript
   private authStatusListener = new Subject<boolean>(); //push auth info to components that are interested
   private userId: string;
 
@@ -38,10 +39,15 @@ export class AuthService {
   //send a request to create a new user
   createUser(email: string, password: string) {
     const authData: AuthData = { email: email, password: password };
+
     this.http.post("http://localhost:3000/api/user/signup", authData)
       .subscribe(response => {
         console.log("Auth Service Create User::");
         console.log(response);
+        this.router.navigate(['/']);
+      }, error => {
+        console.log(error);
+        this.authStatusListener.next(false);
       });
   }
 
@@ -70,6 +76,9 @@ export class AuthService {
           this.saveAuthData(token, expirationDate, response.userId); //save
           this.router.navigate(['/']); //navigate home
         }
+      }, error => {
+        console.log(error);
+        this.authStatusListener.next(false); //used to remove spinner on false login
       });
   }
 
@@ -97,7 +106,7 @@ export class AuthService {
     this.token = null;
     this.isAuthenticated = false;
     this.authStatusListener.next(false); //push new value
-    clearTimeout(this.tokenTimer); //clear the timer when we logout
+    window.clearTimeout(this.tokenTimer); //clear the timer when we logout
     this.clearAuthData(); //clear local storage
     this.userId = null; //clear/logout user
     this.router.navigate(['/']); //navigate home
@@ -106,7 +115,7 @@ export class AuthService {
   //a method to set our expiration timer
   private setAuthTimer(duration: number) {
     console.log("Auth Service Set Auth Timer:: " + duration);
-    this.tokenTimer = setTimeout(() => {
+    this.tokenTimer = window.setTimeout(() => {
         //force logout after duration set time
         this.logoutUser();
     },  (duration * 1000)); //set timeout works in milliseconds
