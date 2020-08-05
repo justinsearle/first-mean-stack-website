@@ -55,7 +55,13 @@ export class PostsService {
   getPost(id: string) {
     //because we want to load this value from the database so the scenario of reloading on the update form and losing data is fixed
     //we need to return the observable and call synchronously as we cannot return in a subscription.
-    return this.http.get<{ _id: string, title: string, content: string, imagePath: string }>("http://localhost:3000/api/posts/" + id); //new
+    return this.http.get<{
+      _id: string,
+      title: string,
+      content: string,
+      imagePath: string,
+      creator: string
+    }>("http://localhost:3000/api/posts/" + id); //new
     // return {...this.posts.find(p => p.id === id)}; //old
   }
 
@@ -104,7 +110,8 @@ export class PostsService {
         id: postId,
         title: userTitle,
         content: userContent,
-        imagePath: image
+        imagePath: image,
+        creator: null //handle this via server
       }
     }
     this.http.put('http://localhost:3000/api/posts/' + postId, postData)

@@ -10,6 +10,7 @@ export class AuthService {
   private token: string;
   private tokenTimer: NodeJS.Timer; //made available by typescript
   private authStatusListener = new Subject<boolean>(); //push auth info to components that are interested
+  private userId: string;
 
   //inject HTTP client and angular Router
   constructor(private http: HttpClient, private router: Router) {}
@@ -29,6 +30,11 @@ export class AuthService {
     return this.authStatusListener.asObservable(); //we only want to emit from this component
   }
 
+  //return the set user ID
+  getUserId() {
+    return this.userId;
+  }
+
   //send a request to create a new user
   createUser(email: string, password: string) {
     const authData: AuthData = { email: email, password: password };
@@ -42,7 +48,7 @@ export class AuthService {
   //login user
   loginUser(email: string, password:string) {
     const authData: AuthData = { email: email, password: password };
-    this.http.post<{ token: string, expiresIn: number }>("http://localhost:3000/api/user/login", authData)
+    this.http.post<{ token: string, expiresIn: number, userId: string }>("http://localhost:3000/api/user/login", authData)
       .subscribe(response => {
         console.log("Auth Service Login User::");
         console.log(response);
@@ -55,12 +61,13 @@ export class AuthService {
           const expiresInDuration = response.expiresIn;
           this.setAuthTimer(expiresInDuration);
           this.isAuthenticated = true;
+          this.userId = response.userId;
           this.authStatusListener.next(true); //emit a new value for the other components
           //save auth data to local storage
           const now = new Date();
           const expirationDate = new Date(now.getTime() + (expiresInDuration * 1000));
           console.log(expirationDate);
-          this.saveAuthData(token, expirationDate); //save
+          this.saveAuthData(token, expirationDate, response.userId); //save
           this.router.navigate(['/']); //navigate home
         }
       });
@@ -79,6 +86,7 @@ export class AuthService {
     if (expiresIn > 0) {
       this.token = authInformation.token;
       this.isAuthenticated = true;
+      this.userId = authInformation.userId;
       this.authStatusListener.next(true);
       this.setAuthTimer(expiresIn / 1000);
     }
@@ -91,6 +99,7 @@ export class AuthService {
     this.authStatusListener.next(false); //push new value
     clearTimeout(this.tokenTimer); //clear the timer when we logout
     this.clearAuthData(); //clear local storage
+    this.userId = null; //clear/logout user
     this.router.navigate(['/']); //navigate home
   }
 
@@ -104,28 +113,32 @@ export class AuthService {
   }
 
   //a method to save a token in browser storage to persist logins
-  private saveAuthData(token: string, expiriationDate: Date) {
+  private saveAuthData(token: string, expiriationDate: Date, userId: string) {
     //use localstoreage API
     localStorage.setItem('token', token); //store key value pair :)
     localStorage.setItem('expiration', expiriationDate.toISOString());
+    localStorage.setItem('userId', userId);
   }
 
   //a method to clear the local storage data
   private clearAuthData() {
     localStorage.removeItem('token');
     localStorage.removeItem('expiration');
+    localStorage.removeItem('userId');
   }
 
   //a method to retrieve auth data from the local storage
   private getAuthData() {
     const token = localStorage.getItem('token');
     const expirationDate = localStorage.getItem('expiration');
+    const userId = localStorage.getItem('expiration');
     if (!token || !expirationDate) {
       return;
     }
     return {
       token: token,
-      expirationDate: new Date(expirationDate)
+      expirationDate: new Date(expirationDate),
+      userId: userId
     }
   }
 }

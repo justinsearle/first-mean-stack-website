@@ -72,7 +72,8 @@ router.post("/login", (req, res, next) => {
       res.status(200).json({
         token: token,
         message: "Authenticated!",
-        expiresIn: 3600 //3600 seconds = 1 hr
+        expiresIn: 3600, //3600 seconds = 1 hr,
+        userId: fetchedUser._id //already included in token, but this is better for performance
       });
     })
     .catch(err => {
