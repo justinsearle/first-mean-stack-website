@@ -1,6 +1,7 @@
 
 //include json web token to verify
 const jwt = require('jsonwebtoken');
+const router = require('../routes/user');
 
 //check there is a token attached to the request and also validate the token
 
@@ -17,7 +18,7 @@ module.exports = (req, res, next) => {
   } catch (error) {
     console.log(error);
     res.status(401).json({
-      message: "Auth failed"
+      message: "You are not authenticated."
     });
   }
 };

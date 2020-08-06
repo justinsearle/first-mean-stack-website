@@ -92,7 +92,7 @@ export class PostsService {
         // // post.id = postId; //update post ID with new added id
         // this.posts.push(post); //add post to our local class
         // this.postsUpdated.next([...this.posts]); //trigger an update by pushing an updated post list
-        this.router.navigate(["/"]); this.router.navigate(["/"]); //navigate to home (posts list) after adding one
+        this.router.navigate(["/"]); //navigate to home (posts list) after adding one
       });
   }
 

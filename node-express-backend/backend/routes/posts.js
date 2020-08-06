@@ -70,8 +70,12 @@ router.post(
           id: createdPost._id //then we can override some   
         }
       });
-    }); //mongoose method add to
-
+    }) //mongoose method add to
+    .catch(error => {
+      res.status(500).json({
+        message: "Creating a post failed."
+      });
+    });
     console.log(post);  
   }
 );
@@ -98,6 +102,9 @@ router.get("", (req, res, next) => {
       message: 'Post fetched successfully!',
       posts: fetchedPosts,
       maxPosts: count
+    })
+    .catch(error => {
+      res.status(500).json({message: "Could not get posts."});
     });
   });  
 });
@@ -132,8 +139,13 @@ router.put(
       if (result.nModified > 0) {
         res.status(200).json({message: "Update succesful!"});
       } else {
-        res.status(401).json({message: "Not authorized!"});
+        res.status(401).json({message: "Not authorized."});
       }
+    })
+    .catch(error => {
+      res.status(500),json({
+        message: "Couldn't update post!."
+      })
     });
   }
 );
@@ -149,6 +161,9 @@ router.get("/:id", (req, res, next) => {
       res.status(404).json({message: 'Post not found!'});
     }
   })
+  .catch(error => {
+    res.status(500).json({message: "Could not get post."});
+  });
 });
 
 //add a new route to delete posts
@@ -164,6 +179,9 @@ router.delete("/:id", checkAuth, (req, res) => {
     } else {
       res.status(401).json({message: "Not authorized!"});
     }
+  })
+  .catch(error => {
+    res.status(500).json({message: "Could not delete post."});
   });    
 });
 

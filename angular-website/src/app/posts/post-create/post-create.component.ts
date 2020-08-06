@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 // import { NgForm } from "@angular/forms";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 
@@ -6,13 +6,15 @@ import { PostsService } from '../post.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Post } from '../post.model';
 import { mimeType } from './mime-type.validator';
+import { Subscription } from 'rxjs';
+import { AuthService } from 'src/app/auth/auth.service';
 
 @Component({
   selector: "app-post-create",
   templateUrl: "./post-create.component.html",
   styleUrls: ["./post-create.component.css"]
 })
-export class PostCreateComponent implements OnInit {
+export class PostCreateComponent implements OnInit, OnDestroy {
   enteredTitle ="";
   enteredContent = "";
   post: Post;
@@ -21,15 +23,24 @@ export class PostCreateComponent implements OnInit {
   imagePreview: string;
   private mode = 'create';
   private postId: string;
+  private authStatusSub: Subscription;
 
   // @Output() postCreated = new EventEmitter<Post>(); //another way of emitting this value to an event listener
 
   constructor(
     public postsService: PostsService,
-    public route: ActivatedRoute
+    public route: ActivatedRoute,
+    private authService: AuthService
   ) {} //gets and sets a postsService variable
 
   ngOnInit() {
+
+    //get our auth listener
+    this.authStatusSub = this.authService
+    .getAuthStatusLisenter()
+    .subscribe(authStatus => {
+      this.isLoading = false;
+    });
 
     //create our form virtually instead
     this.form = new FormGroup({
@@ -71,6 +82,10 @@ export class PostCreateComponent implements OnInit {
         this.postId = null;
       }
     });
+  }
+
+  ngOnDestroy () {
+    this.authStatusSub.unsubscribe();
   }
 
   // This function will handle the event of the forms image field changing
