@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.css']
 })
-export class SingupComponent implements OnInit, OnDestroy {
+export class SignupComponent implements OnInit, OnDestroy {
   isLoading = false;
   private authStatusSub: Subscription;
 
@@ -27,7 +27,7 @@ export class SingupComponent implements OnInit, OnDestroy {
   }
 
   //function to handle singups
-  onSingup(form: NgForm) {
+  onSignup(form: NgForm) {
     //check valid form
     if (form.invalid) {
       return;
