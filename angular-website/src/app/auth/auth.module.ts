@@ -6,6 +6,7 @@ import { SignupComponent } from './signup/signup.component';
 import { CommonModule } from '@angular/common';
 import { AngularMaterialModule } from '../angular-material.module';
 import { FormsModule } from '@angular/forms'; //template driven forms approach
+import { AuthRoutingModule } from './auth-routing.module';
 
 @NgModule({
   declarations: [
@@ -16,6 +17,7 @@ import { FormsModule } from '@angular/forms'; //template driven forms approach
     CommonModule,
     AngularMaterialModule,
     FormsModule,
+    AuthRoutingModule
   ]
 })
 export class AuthModule {}
