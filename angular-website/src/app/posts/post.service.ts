@@ -5,6 +5,9 @@ import { map } from 'rxjs/operators';
 
 import { Post } from './post.model';
 import { Router } from '@angular/router';
+import { environment } from "../../environments/environment"
+
+const BACKEND_URL = environment.apiUrl + "/posts/";
 
 @Injectable({providedIn: 'root'}) //this will allow this module to be the only instance on the server
 export class PostsService {
@@ -18,7 +21,7 @@ export class PostsService {
   getPosts(postsPerPage: number, currentPage: number) {
     const queryParams = `?pagesize=${postsPerPage}&page=${currentPage}`; //template expression with backticks: dynamically add values into a normal string
     this.http
-      .get<{ message: string, posts: any, maxPosts: number }>('http://localhost:3000/api/posts' + queryParams)
+      .get<{ message: string, posts: any, maxPosts: number }>(BACKEND_URL + queryParams)
       .pipe(map((postData) => { //strip the message and update the posts elements
         return {
           posts: postData.posts.map(post => {
@@ -61,7 +64,7 @@ export class PostsService {
       content: string,
       imagePath: string,
       creator: string
-    }>("http://localhost:3000/api/posts/" + id); //new
+    }>(BACKEND_URL + id); //new
     // return {...this.posts.find(p => p.id === id)}; //old
   }
 
@@ -76,7 +79,7 @@ export class PostsService {
     this.http
       // .post<{message: string, postId: string}>(
       .post<{message: string, post: Post}>(
-        'http://localhost:3000/api/posts',
+        BACKEND_URL,
         postData
       )
       .subscribe((res) => {
@@ -114,7 +117,7 @@ export class PostsService {
         creator: null //handle this via server
       }
     }
-    this.http.put('http://localhost:3000/api/posts/' + postId, postData)
+    this.http.put(BACKEND_URL + postId, postData)
       .subscribe(response => {
         console.log("Post Service Update Post RESPONSE: " + response);
 
@@ -143,7 +146,7 @@ export class PostsService {
   //new easy way is to return the configured http call
   deletePost(postId: string) {
     return this.http
-      .delete<{message: string}>('http://localhost:3000/api/posts/' + postId)
+      .delete<{message: string}>(BACKEND_URL + postId)
         // .subscribe(() => {
         //   // console.log("Post Service Delete Post DELETED:" + res.message);
 

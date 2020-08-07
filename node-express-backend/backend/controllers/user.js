@@ -61,7 +61,7 @@ exports.loginUser = (req, res, next) => {
       //valid password - create token with json web token
       const token = jwt.sign(
         { email: fetchedUser.email, userId: fetchedUser._id }, 
-        "secret_only_for_development",
+        process.env.JWT_KEY,
         { expiresIn: "1h" } //allows me to configure token
       );
       //return our token
